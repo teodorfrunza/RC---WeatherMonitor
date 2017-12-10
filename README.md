@@ -1,0 +1,2 @@
+# WeatherMonitor
+Proiect pentru RC
