@@ -1,0 +1,259 @@
+\documentclass{llncs}
+\usepackage{tikz-uml}
+\usepackage{listings}
+\usepackage{color}
+%
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+%
+\lstset{frame=tb,
+  language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+%
+\begin{document}
+%
+\title{Weather Monitor}
+%
+\subtitle{Grad Dificultate C}
+%
+\author{Frunza Teodor-Octavian}
+%
+\institute{Universitatea "Alexandru Ioan Cuza" Facultatea de Informatica
+\email{frunza.teodor@info.uaic.ro}}
+%
+\maketitle
+%
+\begin{abstract}
+Acest document reprezinta un raport amanuntit asupra proiectului Weather Monitor fiind alcatuit atat din elemente arhitecturale cat si din elemente reprezentate de interactiune cu utilizatorul.
+\end{abstract}
+%
+\section{Introducere}
+%
+\subsection{Enuntul Problemei}
+Sa se scrie o aplicatie client/server pentru managementul (e.g., listare, modificare, stergere) informatiilor meteo pentru o anumita zona. La un port separat se va oferi posibilitatea actualizarii informatiilor meteo privitoare la o localitate sau multime de localitati ale zonei considerate.
+%
+\subsection{Analiza Problemei}
+Din enuntul problemei deducem ca ni se cere crearea unei aplicatii alcatuita dintr-un server concurent si un client ce se poate conecta la acesta.
+Astfel, pentru a rezolva aceasta problema vom cauta spre a utiliza o metoda optima de transmitere a datelor de la useri multipli la server si invers fara a exista riscul de a pierde biti de date sau
+de a corupe mesajele trimise. Mai mult, vom incerca optimizarea acesteia pentru a inlatura posibilitatile de supraincarcare a retelei sau timpii excesivi de lungi pentru asteptarea raspunsurilor.
+%
+\section{Tehnologii Uitilzate}
+%
+\subsection{TCP/IP}
+Vom utiliza TCP/IP ca protocol de comunicare în rețeaua aplicației WeatherMonitor datorită aplicațiilor sale vaste în problemele de tip conexiune biunivocă client / server. De asemenea, vom creea un server ce utilizează protocolul de tip TCP/IP sub formă concurentă pentru a permite utilizarea simultana a serverului de mai multi clienti fara a corupe sau pierde datele individuale. In ceea ce urmeaza voi prezenta cateva caracteristici ale protocolului de transmisie TCP/IP datorita carora a fost ales pentru acest proiect si motivul excluderii protocolului UDP.
+%
+\subsection{Caracteristici TCP/IP}
+%
+\begin{enumerate}
+%
+\item Ofera servicii orientate-conexiune, full duplex;
+\item Conexiunile sunt sigure pentru transportul fluxurilor de octeti;
+\item Vizeaza oferirea calitatii maxime a serviciilor;
+\item Controleaza fluxul de date (stream-oriented).
+\end{enumerate}
+%
+\subsection{De ce nu folosim UDP?}
+%
+\begin{enumerate}
+\item Ofera servicii minimale de transport, avand riscul de a pierde informatii;
+\item Nu ofera controlul fluxului de date;
+\item Nu este orientat conexiune.
+\end{enumerate}
+%
+Astfel se observa ca utilizarea protocolului UDP pentru trimiterea informatiei intre client si server ar fi deficitar in cazul nostru avand un risc destul de mare de a pierde informatii pe parcurs.
+%
+\section{Arhitectura Aplicatiei}
+%
+\subsection{Metoda de Functionare}
+%
+Aplicatia Weather Monitor va fi alcatuita din urmatoarele entitati/participanti:
+%
+\begin{enumerate}
+\item Baza de date / Fisier(e) de stocare a informatiilor meteo;
+\item Server TCP/IP concurent pe baza de fork;
+\item Client.
+\end{enumerate}
+%
+Clientul va avea patru optiuni din care va putea alege:
+%
+\begin{enumerate}
+\item Afisarea datelor meteo actuale (afisareVreme());
+\item Alegerea altui oras (schimbaOras());
+\item Actualizeaza datele meteo (actualizareVreme());
+\item Stergerea unui oras (stergeOras()).
+\end{enumerate}
+%
+\subsection{Diagrama UML}
+%
+\begin{tikzpicture}
+\umlclass[x=8]{Server}{
+	+  port : int \\ 
+	+  ip : long \\
+}{
+	+ searchByUserId(userId : int) : void \\
+	+  afisareVreme(oras : string) : void \\
+	+  schimbaOras(oras : string) : void \\
+	+ actualizareVreme() : void \\
+	+ stergeOras(oras : string) : void
+}
+\umlclass[x=0,type=abstract]{AbstractClient}{
+	+ alegeOptiune() : int
+}{}
+\umlclass[y=-5]{Client}{
+	+ userId : int
+}{}
+\umlassoc[mult1=1, mult2=1..*, pos1=0.1, pos2=0.9, name=has]{Server}{AbstractClient}
+\umlinherit{Client}{AbstractClient}
+\end{tikzpicture}
+%
+\section{Detalii de Implementare}
+%
+\subsection{Scenarii de utilizare}
+%
+\begin{tikzpicture}
+\umlactor[y=-3]{Client}
+\umlactor[x=12,y=-3]{Server}
+\umlusecase[x=3,y=-3,name=case0]{Connect server}
+\umlusecase[x=8,y=0,name=case1]{Afiseaza meteo}
+\umlusecase[x=8,y=-2,name=case2]{Schimba Oras}
+\umlusecase[x=8,y=-4,name=case3]{Actualizeaza vreme}
+\umlusecase[x=8,y=-6,name=case4]{Sterge Oras}
+\umlusecase[x=8,y=-8,name=info]{Send Info}
+\umlusecase[x=12,y=0,name=db]{Acces DB}
+\umlinclude{case0}{case1}
+\umlinclude{case0}{case2}
+\umlinclude{case0}{case3}
+\umlinclude{case0}{case4}
+\umlassoc{Client}{case0}
+\umlassoc{case1}{Server}
+\umlassoc{case2}{Server}
+\umlassoc{case3}{Server}
+\umlassoc{case4}{Server}
+\umlassoc{Server}{db}
+\umlassoc{Client}{info}
+\umlassoc{info}{Server}
+\end{tikzpicture}
+%
+\section{Cod Relevant}
+%
+\subsection{Client}
+%
+\begin{lstlisting}
+count = 0;
+if (connect (sd, (struct sockaddr *) &server,sizeof (struct sockaddr)) == -1){
+	 perror ("[client]Eroare la connect()");
+	 return errno;
+}
+
+if(count == 0){
+	if (write (sd, userId, 5) <= 0){
+     		perror ("[client]Eroare la write() spre server\n");
+		return errno;
+    	}
+	if (read (sd, msg, 100) < 0){
+      		perror ("[client]Eroare la read() de la server.\n");
+      		return errno;
+    	}
+  printf ("[client]Mesajul primit este:", msg);
+}
+else{
+	count ++;
+	bzero (msg, 2);
+	printf ("[client]1) Afiseaza meteo \n");
+	printf ("[client]2) Schimba oras \n");
+	printf ("[client]3)Actualizeaza vreme \n");
+	printf ("[client]3)Sterge oras \n");
+	printf ("[client]0) Inchide conexiunea \n")
+	printf ("[client]Introduceti optiunea dorita: \n");
+	fflush (stdout);
+	read (0, msg, 2);
+	while(msg != 1 || msg !=2 || msg != 3 || msg != 4) {
+		printf ("[client]Ati introdus o optiune inexistenta. Va rog introduceti optiunea dorita din cele existente(1,2,3,4: ");
+		read (0, msg, 2);
+	}
+}
+\end{lstlisting}
+%
+Am ales la client aceasta secventa deoarece reprezinta realizarea conexiunii cu serverul si trimiterea automata a id-ului clientului catre server.
+In functie de acest Id i se va afisa vremea in functie de ultimele setari. De exemplu daca acesta avea orasul Iasi setat initial,
+se va afisa vremea din acea locatie. De asemenea se poate observa si un prim prototip de meniu si o verificare
+pentru optiuni. Daca clientul alege o optiune inexistenta acesta va trebui sa reintroduca pana cand este o optiune valida.
+%
+\subsection{Server}
+%
+\begin{lstlisting}
+client = accept (sd, (struct sockaddr *) &from, &length);
+if(fork()==0){
+	close(sd);
+}
+if (client < 0){
+	  perror ("[server]Eroare la accept().\n");
+	  continue;
+}
+if (read (client, msg, 100) <= 0){
+	  perror ("[server]Eroare la read() de la client.\n");
+	  close (client);	
+	  continue;		
+}
+if (verfiId(msg) == true){
+	bzero(msgrasp,100);
+	importWeather(msgrasp,msg);
+	if (write (client, msgrasp, 100) <= 0){
+	 	perror ("[server]Eroare la write() catre client.\n");
+	  	continue;		
+	}
+}
+if(verifExit(msg) == true){
+	close(client);
+}
+else{
+	bzero (msg, 100);
+	if (read (client, msg, 100) <= 0){
+	  	perror ("[server]Eroare la read() de la client.\n");
+	 	 close (client);	
+	  	continue;		
+	}
+}
+//verifId e functie care verifica daca e de forma Id -> daca e aducem vremea default din zona atribuita acelui user
+//importWeather -> aduce vremea personalizata pentru client
+//verifExit -> daca e 0 inchide consexiunea
+\end{lstlisting}
+%
+Am ales la server aceasta secventa deoarece reprezinta acceptarea clientului, crearea copilului si inchiderea conexiunii pe tata si de asemenea
+primirea initiala a idului clientului. Pe baza acestuia se importa din baza de date / fisier ultimele setari si se afiseaza vremea. Dupa aceasta operatiune
+acesta asteapta o optiune de la client. Daca este 0 serverul inchide conexiunea cu clientul.
+%
+\section{Concluzii}
+%
+Pana in momentul de fata avem realizate atat arhitectura aplicatie (UML) cat si scenariile de utilizare (USE CASE). Mai mult avem si un prototip de client si server urmand sa completam cu functiile 
+de verificare si parsare a textului. De imbunatatit ar fi securitatea, viteza si rezolvarea buggurilor din program.
+%
+\section{Bibliografie}
+%
+In realizarea acestui document s-au utilizat urmatoarele resurse:
+%
+\begin{enumerate}
+\item https://profs.info.uaic.ro/~computernetworks/cursullaboratorul.php
+\item https://profs.info.uaic.ro/~computernetworks/files/NetEx/S5/servTcpIt.c
+\item https://profs.info.uaic.ro/~computernetworks/files/NetEx/S5/cliTcpIt.c
+\item https://profs.info.uaic.ro/~computernetworks/ProiecteNet2017.php
+\item https://stackoverflow.com/questions/3175105/writing-code-in-latex-document
+\item https://tex.stackexchange.com/questions/354089/how-to-give-a-name-to-an-association-with-tikz-uml
+\item tikz-uml-userguide.pdf
+\item llncsdoc.pdf
+\end{enumerate}
+\end{document}
