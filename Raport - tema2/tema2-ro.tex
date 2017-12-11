@@ -49,7 +49,7 @@
 \maketitle
 %
 \begin{abstract}
-Acest document reprezintă un raport amănun'tit asupra proiectului Weather Monitor, fiind alcatuit atât din elemente arhitecturale cât 'si din elemente reprezentate de interac'tiunea utilizatorul cu aplica'tia.
+Acest document reprezintă un raport amănun'tit asupra proiectului "Weather Monitor", fiind alcătuit atât din elemente arhitecturale cât 'si din elemente reprezentate de interac'tiunea utilizatorului cu aplica'tia.
 \end{abstract}
 %
 \section{Introducere}
@@ -58,53 +58,53 @@ Acest document reprezintă un raport amănun'tit asupra proiectului Weather Moni
 Să se scrie o aplica'tie client/server pentru managementul (e.g., listare, modificare, 'stergere) informa'tiilor meteo pentru o anumită zonă. La un port separat se va oferi posibilitatea actualizării informa'tiilor meteo privitoare la o localitate sau mul'time de localită'ti ale zonei considerate.
 %
 \subsection{Analiza Problemei}
-Din enun'tul problemei deducem că ni se cere crearea unei aplica'tii alcătuită dintr-un server concurent 'si un client ce se poate conecta la acesta.
-Astfel, pentru a rezolva această problemă vom căuta spre a utiliza o metodă optimă de transmitere a datelor de la useri multipli la server 'si invers fara a exista riscul de a pierde bi'ti de date sau de a corupe mesajele trimise. Mai mult, vom încerca optimizarea acesteia pentru a înlătura posibilită'tile de supraîncărcare a re'telei sau timpii excesivi de lungi pentru asteptarea răspunsurilor.
+Din enun'tul problemei deducem că ni se cere crearea unei aplica'tii alcătuite dintr-un server concurent 'si un client ce se poate conecta la acesta.
+Astfel, pentru a rezolva această problemă vom căuta spre a utiliza o metodă optimă de transmitere a datelor de la useri multipli la server 'si invers fără a exista riscul de a pierde bi'ti de date sau de a corupe mesajele trimise. Mai mult, vom încerca optimizarea acesteia pentru a înlătura posibilită'tile de supraîncărcare a re'telei sau timpii excesivi de lungi de a'steptare a răspunsurilor.
 %
 \section{Tehnologii Uitilzate}
 %
 \subsection{TCP/IP}
-Vom utiliza TCP/IP ca protocol de comunicare în rețeaua aplicației WeatherMonitor datorită aplicațiilor sale vaste în problemele de tip conexiune biunivocă client / server. De asemenea, vom creea un server ce utilizează protocolul de tip TCP/IP sub formă concurentă pentru a permite utilizarea simultana a serverului de mai multi clienti fara a corupe sau pierde datele individuale. In ceea ce urmeaza voi prezenta cateva caracteristici ale protocolului de transmisie TCP/IP datorita carora a fost ales pentru acest proiect si motivul excluderii protocolului UDP.
+Vom utiliza TCP/IP ca protocol de comunicare în re'teaua aplica'tiei "Weather Monitor" datorită aplica'tiilor sale vaste în problemele de tip conexiune biunivocă client / server. De asemenea, vom creea un server ce utilizează protocolul de tip TCP/IP sub formă concurentă pentru a permite utilizarea simultană a serverului de către mai mul'ti clien'ti fără a corupe sau pierde datele individuale. În ceea ce urmează voi prezenta câteva caracteristici ale protocolului de transmisie TCP/IP datorită cărora a fost ales pentru acest proiect 'si motivul excluderii protocolului UDP.
 %
 \subsection{Caracteristici TCP/IP}
 %
 \begin{enumerate}
 %
-\item Ofera servicii orientate-conexiune, full duplex;
-\item Conexiunile sunt sigure pentru transportul fluxurilor de octeti;
-\item Vizeaza oferirea calitatii maxime a serviciilor;
-\item Controleaza fluxul de date (stream-oriented).
+\item Oferă servicii orientate-conexiune, full duplex;
+\item Conexiunile sunt sigure pentru transportul fluxurilor de octe'ti;
+\item Vizeaza oferirea calită'tii maxime a serviciilor;
+\item Controlează fluxul de date (stream-oriented).
 \end{enumerate}
 %
 \subsection{De ce nu folosim UDP?}
 %
 \begin{enumerate}
-\item Ofera servicii minimale de transport, avand riscul de a pierde informatii;
-\item Nu ofera controlul fluxului de date;
+\item Oferă servicii minimale de transport, având riscul de a pierde informa'tii;
+\item Nu oferă controlul fluxului de date;
 \item Nu este orientat conexiune.
 \end{enumerate}
 %
-Astfel se observa ca utilizarea protocolului UDP pentru trimiterea informatiei intre client si server ar fi deficitar in cazul nostru avand un risc destul de mare de a pierde informatii pe parcurs.
+Astfel se observă că utilizarea protocolului UDP pentru trimiterea informa'tiei între client 'si server ar fi deficitar în cazul nostru, având un risc destul de mare de a pierde informa'tii pe parcurs.
 %
-\section{Arhitectura Aplicatiei}
+\section{Arhitectura Aplica'tiei}
 %
-\subsection{Metoda de Functionare}
+\subsection{Metoda de Func'tionare}
 %
-Aplicatia Weather Monitor va fi alcatuita din urmatoarele entitati/participanti:
+Aplica'tia "Weather Monitor" va fi alcătuită din următoarele entită'ti/participan'ti:
 %
 \begin{enumerate}
-\item Baza de date / Fisier(e) de stocare a informatiilor meteo;
+\item Baza de date / Fi'sier(e) de stocare a informa'tiilor meteo;
 \item Server TCP/IP concurent pe baza de fork;
 \item Client.
 \end{enumerate}
 %
-Clientul va avea patru optiuni din care va putea alege:
+Clientul va avea patru op'tiuni din care va putea alege:
 %
 \begin{enumerate}
-\item Afisarea datelor meteo actuale (afisareVreme());
-\item Alegerea altui oras (schimbaOras());
-\item Actualizeaza datele meteo (actualizareVreme());
-\item Stergerea unui oras (stergeOras()).
+\item Afi'sarea datelor meteo actuale (afisareVreme());
+\item Alegerea altui ora's (schimbaOras());
+\item Actualizarea datele meteo (actualizareVreme());
+\item 'Stergerea unui ora's (stergeOras()).
 \end{enumerate}
 %
 \subsection{Diagrama UML}
@@ -114,11 +114,11 @@ Clientul va avea patru optiuni din care va putea alege:
 	+  port : int \\ 
 	+  ip : long \\
 }{
-	+ searchByUserId(userId : int) : void \\
+	+  searchByUserId(userId : int) : void \\
 	+  afisareVreme(oras : string) : void \\
 	+  schimbaOras(oras : string) : void \\
-	+ actualizareVreme() : void \\
-	+ stergeOras(oras : string) : void
+	+  actualizareVreme() : void \\
+	+  stergeOras(oras : string) : void
 }
 \umlclass[x=0,type=abstract]{AbstractClient}{
 	+ alegeOptiune() : int
@@ -132,7 +132,7 @@ Clientul va avea patru optiuni din care va putea alege:
 %
 \section{Detalii de Implementare}
 %
-\subsection{Scenarii de utilizare}
+\subsection{'Scenarii de utilizare}
 %
 \begin{tikzpicture}
 \umlactor[y=-3]{Client}
@@ -199,10 +199,10 @@ else{
 }
 \end{lstlisting}
 %
-Am ales la client aceasta secventa deoarece reprezinta realizarea conexiunii cu serverul si trimiterea automata a id-ului clientului catre server.
-In functie de acest Id i se va afisa vremea in functie de ultimele setari. De exemplu daca acesta avea orasul Iasi setat initial,
-se va afisa vremea din acea locatie. De asemenea se poate observa si un prim prototip de meniu si o verificare
-pentru optiuni. Daca clientul alege o optiune inexistenta acesta va trebui sa reintroduca pana cand este o optiune valida.
+Am ales la client această secven'tă deoarece reprezintă realizarea conexiunii cu serverul 'si trimiterea automată a id-ului clientului către server.
+În func'tie de acest Id i se va afi'sa vremea personalizată de ultimele setări făcute. De exemplu, dacă clientul avea ora'sul Ia'si setat ini'tial,
+se va afisa vremea din acea loca'tie. De asemenea, se poate observa 'si un prim prototip de meniu 'si o verificare
+pentru alegerea op'tiunii. Dacă clientul alege o op'tiune inexistentă, acesta va trebui să reintroducă un caracter până când acesta reprezintă o op'tiune validă.
 %
 \subsection{Server}
 %
@@ -220,7 +220,7 @@ if (read (client, msg, 100) <= 0){
 	  close (client);	
 	  continue;		
 }
-if (verfiId(msg) == true){
+if (verfYId(msg) == true){
 	bzero(msgrasp,100);
 	importWeather(msgrasp,msg);
 	if (write (client, msgrasp, 100) <= 0){
@@ -228,7 +228,7 @@ if (verfiId(msg) == true){
 	  	continue;		
 	}
 }
-if(verifExit(msg) == true){
+if(verifyExit(msg) == true){
 	close(client);
 }
 else{
@@ -239,23 +239,22 @@ else{
 	  	continue;		
 	}
 }
-//verifId e functie care verifica daca e de forma Id -> daca e aducem vremea default din zona atribuita acelui user
+//verifyId reprezinta o functie care verifica daca datele primite de la client sunt  de forma Id. Daca sunt de aceasta forma aducem vremea prestabilita din fisierul acelui user
 //importWeather -> aduce vremea personalizata pentru client
-//verifExit -> daca e 0 inchide consexiunea
+//verifExit -> daca este 0 inchide consexiunea
 \end{lstlisting}
 %
-Am ales la server aceasta secventa deoarece reprezinta acceptarea clientului, crearea copilului si inchiderea conexiunii pe tata si de asemenea
-primirea initiala a idului clientului. Pe baza acestuia se importa din baza de date / fisier ultimele setari si se afiseaza vremea. Dupa aceasta operatiune
-acesta asteapta o optiune de la client. Daca este 0 serverul inchide conexiunea cu clientul.
+Am ales la server această secven'tă deoarece reprezintă acceptarea clientului, crearea copilului 'si închiderea conexiunii în procesul părinte 'si de asemenea
+primirea ini'tială a id-ului clientului. Pe baza acestuia se importă din baza de date / fi'sier(e) ultimele setări 'si se afi'sează vremea. După acceptarea id-ului, verificarea existen'tei
+acestuia 'si afi'sarea datelor meteorologice predefinite de utlizator, acesta a'steaptă o op'tiune de la client. Dacă este 0 serverul închide conexiunea cu clientul.
 %
 \section{Concluzii}
 %
-Pana in momentul de fata avem realizate atat arhitectura aplicatie (UML) cat si scenariile de utilizare (USE CASE). Mai mult avem si un prototip de client si server urmand sa completam cu functiile 
-de verificare si parsare a textului. De imbunatatit ar fi securitatea, viteza si rezolvarea buggurilor din program.
+Până în momentul de fa'tă avem realizate atât arhitectura aplica'tiei (UML) cât 'si 'scenariile de utilizare a aplica'tiei (USE CASE). Mai mult, avem 'si un prototip de client 'si server, urmând să completăm cu func'tiile de verificare 'si parsare a textului. De îmbunătă'tit ar fi securitatea, viteza 'si rezolvarea buggurilor din aplica'tie.
 %
 \section{Bibliografie}
 %
-In realizarea acestui document s-au utilizat urmatoarele resurse:
+În realizarea acestui document s-au utilizat următoarele resurse:
 %
 \begin{enumerate}
 \item https://profs.info.uaic.ro/~computernetworks/cursullaboratorul.php
