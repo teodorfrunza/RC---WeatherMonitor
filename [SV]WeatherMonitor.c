@@ -155,6 +155,16 @@ int main (){
                     strcat(msgrasp,"[server]2.Remove town\n");
                     strcat(msgrasp,"[server]3.Exit\n");
                 }
+                else{
+                    bzero(msgrasp,100);
+                    strcat(msgrasp,"[server]Wrong user or password!!! Closing connection.\n");
+                    if (write (client, msgrasp, 100) <= 0){
+	                    perror ("[server]Eroare la write() catre client.\n");
+	                    continue;		/* continuam sa ascultam */
+	                }
+                    else printf ("[server]Mesajul a fost trasmis cu succes.\n");
+                    close(sd);
+                }
 
                 if (write (client, msgrasp, 100) <= 0){
 	                perror ("[server]Eroare la write() catre client.\n");
