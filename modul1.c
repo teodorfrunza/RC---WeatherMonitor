@@ -91,8 +91,6 @@ int verifUser(char * username){
 int creareCont(char * username, char * password){
     FILE * f = NULL;
     FILE * f2 = NULL;
-    char * line = NULL;
-    size_t length = 0;
 
     f = fopen("/home/leafy/Retele/WeatherMonitor/login","a");
     if (f == NULL) {
@@ -111,17 +109,46 @@ int creareCont(char * username, char * password){
     return 1;
 }
 
+int creareCont2(char * username, char * password, char * town){
+    FILE * f = NULL;
+    FILE * f2 = NULL;
+
+    if(verifUser(username) == 1) return 0;
+
+    f = fopen("/home/leafy/Retele/WeatherMonitor/login","a");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului de login.\n");
+        return errno;
+    }
+    
+    f2 = fopen("/home/leafy/Retele/WeatherMonitor/Users","a");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului cu utilizatori.\n");
+        return errno;
+    }
+
+    fprintf(f,"%s %s\n", username, password);
+    fprintf(f2,"%s::%s ", username, town);
+
+    fclose(f);
+    fclose(f2);
+    return 1;
+}
+
 
 
 int main(void){
     char * username = "root";
     char * password = "toor";
-    char * username2 = "vasile";
+    char * username2 = "vasilez2";
     char * password2 = "tuica";
-    printf("Verif %d ",verif(username,password));
-    printf("V_u %d ",verifUser(username));
-    printf("V_u %d ",verifUser(username2));
-    printf("Creare %d ",creareCont(username2,password2));
+    char * town = "craiova";
+    printf("Verif %d \n",verif(username,password));
+    //printf("V_u %d \n",verifUser(username));
+    printf("V_u %d \n",verifUser(username2));
+    //printf("Creare %d \n",creareCont(username2,password2));
+    printf("%d\n",verif("root"," "));
+    printf("cont : %d \n",creareCont2(username2,password2,town));
     
 }
 

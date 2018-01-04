@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define PORT 2025
+#include "port.h"
 
 extern int errno;
 
@@ -41,6 +41,52 @@ int verif(char * username, char * password){
     }
     fclose(f);
     return 0;
+}
+
+int verifUser(char * username){
+    FILE * f = NULL;
+    char * line = NULL;
+    size_t length = 0;
+    char * user;
+
+    f = fopen("/home/leafy/Retele/WeatherMonitor/login","r");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului.\n");
+        return errno;
+    }
+
+    while (( getline(&line, &length, f)) != EOF ) {
+        user = strtok(line," ");
+        if (strcmp(user,username) == 0) return 1;
+    }
+    fclose(f);
+    return 0;
+}
+
+int createAccount(char * username, char * password, char * town){
+    FILE * f = NULL;
+    FILE * f2 = NULL;
+
+    if(verifUser(username) == 1) return 0;
+
+    f = fopen("/home/leafy/Retele/WeatherMonitor/login","a");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului de login.\n");
+        return errno;
+    }
+    
+    f2 = fopen("/home/leafy/Retele/WeatherMonitor/Users","a");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului cu utilizatori.\n");
+        return errno;
+    }
+
+    fprintf(f,"%s %s\n", username, password);
+    fprintf(f2,"%s::%s ", username, town);
+
+    fclose(f);
+    fclose(f2);
+    return 1;
 }
 
 int main (){
@@ -138,15 +184,16 @@ int main (){
 	                continue;		/* continuam sa ascultam */
 	            }
 
-                printf ("[server]Mesajul a fost receptionat...%s%s%s\n", msg,msg,msg);
+                printf ("[server]Mesajul a fost receptionat...%s\n", msg);
 
                 char * user;
                 char * pass;
-       
+                
                 user = strtok(msg," ");
                 pass = strtok(NULL," \n");
-                printf("[server] user : %d",verif(user,pass));
-                printf("[server] pass : %s",pass);
+                
+                printf("[server] user : %d\n",verif(user,pass));
+                printf("[server] pass : %s\n",pass);
                 if(verif(user,pass) == 1){
                     bzero(msgrasp,100);
                     strcat(msgrasp,"[server]Logged in successfully!\n");
@@ -158,31 +205,87 @@ int main (){
                 else{
                     bzero(msgrasp,100);
                     strcat(msgrasp,"[server]Wrong user or password!!! Closing connection.\n");
-                    if (write (client, msgrasp, 100) <= 0){
-	                    perror ("[server]Eroare la write() catre client.\n");
-	                    continue;		/* continuam sa ascultam */
-	                }
-                    else printf ("[server]Mesajul a fost trasmis cu succes.\n");
-                    close(sd);
                 }
-
-                if (write (client, msgrasp, 100) <= 0){
-	                perror ("[server]Eroare la write() catre client.\n");
-	                continue;		/* continuam sa ascultam */
-	            }
-                else printf ("[server]Mesajul a fost trasmis cu succes.\n");
-
-
-
-
 
 
             }
             else if(msg[0] == '2'){
-                /* DE FACUT MAI TARZIU */ return 0;
+
+                /*pregatim mesajul de raspuns */
+                bzero(msgrasp,100);
+                strcat(msgrasp,"[server]Please insert an username and a password that does not contain uppercase or space: ");
+
+                if (write (client, msgrasp, 100) <= 0){
+	                perror ("[server]Eroare la write() catre client.\n");
+	                continue;		/* continuam sa ascultam */
+                }
+                else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",msgrasp);
+
+                bzero(msgrasp,100);    
+                bzero (msg, 100);
+                /* citirea mesajului */
+                if (read (client, msg, 100) <= 0){
+	                perror ("[server]Eroare la read() de la client.\n");
+	                close (client);	/* inchidem conexiunea cu clientul */
+	                continue;		/* continuam sa ascultam */
+	            }
+
+                printf ("[server]Mesajul a fost receptionat...%s\n", msg);
+
+                char * user;
+                char * pass;
+                
+                user = strtok(msg," ");
+                pass = strtok(NULL," \n");
+
+                bzero(msgrasp,100);
+                strcat(msgrasp,"[server]Please insert the default town with lowercase: ");
+
+                if (write (client, msgrasp, 100) <= 0){
+	                perror ("[server]Eroare la write() catre client.\n");
+	                continue;		/* continuam sa ascultam */
+                }
+                else printf ("[server]Mesajul a fost trasmis cu succes.\n");
+
+
+                bzero(msgrasp,100);    
+                bzero (msg, 100);
+                /* citirea mesajului */
+                if (read (client, msg, 100) <= 0){
+	                perror ("[server]Eroare la read() de la client.\n");
+	                close (client);	/* inchidem conexiunea cu clientul */
+	                continue;		/* continuam sa ascultam */
+	            }
+
+                printf ("[server]Mesajul a fost receptionat...%s\n", msg);
+
+
+                char * town = msg;
+
+                if(createAccount(user,pass,town) == 1){
+                    printf("OK");
+                }
+                else printf("NO");
+
+
+
+
             }
+
+
+
+
+            if (write (client, msgrasp, 100) <= 0){
+	                perror ("[server]Eroare la write() catre client.\n");
+	                continue;		/* continuam sa ascultam */
+	        }
+            else printf ("[server]Mesajul a fost trasmis cu succes.\n");
+
+
+
+            
 	
-            printf ("[server]Mesajul a fost receptionat...%s\n", msg);
+          
 
             /*
             bzero(msgrasp,100);

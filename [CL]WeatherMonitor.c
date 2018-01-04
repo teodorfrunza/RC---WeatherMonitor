@@ -14,6 +14,26 @@ extern int errno;
 /* portul de conectare la server*/
 int port;
 
+int verifUser(char * username){
+    FILE * f = NULL;
+    char * line = NULL;
+    size_t length = 0;
+    char * user;
+
+    f = fopen("/home/leafy/Retele/WeatherMonitor/login","r");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului.\n");
+        return errno;
+    }
+
+    while (( getline(&line, &length, f)) != EOF ) {
+        user = strtok(line," ");
+        if (strcmp(user,username) == 0) return 1;
+    }
+    fclose(f);
+    return 0;
+}
+
 int main (int argc, char *argv[]){
 
     int sd;			            // descriptorul de socket
@@ -78,7 +98,10 @@ int main (int argc, char *argv[]){
     }
     /* afisam mesajul primit */
 
+    printf("%d , %s ",strcmp(msg,"[server]Please insert an username and a password that contains only alphabetical characters a-z : "),msg);
+    fflush(stdout);
     if(strcmp(msg,"[server]Please insert your username and password separated by a space (ex:asd 1234): ") == 0){
+
         printf ("%s", msg);
         fflush(stdout);
 
@@ -88,6 +111,7 @@ int main (int argc, char *argv[]){
 
         for(int i=0;i<strlen(msg);i++)
             if(msg[i] == ' ') count++;
+
         
         while (count == 0 || count >=2){
             count = 0;
@@ -106,6 +130,84 @@ int main (int argc, char *argv[]){
         }
 
     }
+
+    if(strcmp(msg,"[server]Please insert an username and a password that does not contain uppercase or space: ") == 0){
+
+        printf ("%s", msg);
+        fflush(stdout);
+
+        int count = 0;
+        char * user;
+        bzero (msg, 100);
+        read(0, msg, 100);
+
+        user = strtok(msg," ");
+
+
+        while (count == 0 || count >=2 || (verifUser(user) == 1)){
+            count = 0;
+            printf("[client]You have entered a wrong number of arguments or a taken username! Please retry: ");
+            fflush(stdout);
+
+            bzero (msg, 100);
+            read(0, msg, 100);
+            for(int i=0;i<strlen(msg);i++)
+                if(msg[i] == ' ') count++;
+            user = strtok(msg," ");
+        }
+
+        
+        
+
+        
+        if (write (sd, msg, 100) <= 0){
+            perror ("[client]Eroare la write() spre server.\n");
+            return errno;
+        }
+
+        bzero (msg, 100);
+        if (read (sd, msg, 100) < 0){
+            perror ("[client]Eroare la read() de la server.\n");
+            return errno;
+        }
+
+        printf ("%s", msg);
+        fflush(stdout);
+
+        bzero (msg, 100);
+        read(0, msg, 100);
+
+        int flag=0;
+        for(int i = 0 ; i<3; i++){
+            //DE FACUT FUNCTIA DE VERIFICARE ORAS DIN FISIER
+            if(verifTown(msg) == 1) flag++;
+        }
+        
+        while(flag == 0){
+            flag = 0;
+            printf("[client]You have entered a city we our app doesn't cover! Please retry: ");
+            fflush(stdout);
+
+            bzero (msg, 100);
+            read(0, msg, 100);
+
+            for(int i = 0 ; i<3; i++){
+                if(verifTown(msg) == 1) flag++;
+            }
+        }
+
+        if (write (sd, msg, 100) <= 0){
+            perror ("[client]Eroare la write() spre server.\n");
+            return errno;
+        }
+
+    }
+
+
+
+
+
+
 
     system("clear");
     bzero (msg, 100);
