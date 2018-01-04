@@ -1,0 +1,9 @@
+Modul 1 -> conectare cu user si parola + creare cont
+Modul 2 -> crearea si accesarea fisierelor pt acel user
+Modul 3 -> afisare / adaugare / stergere
+Modul 4 -> conexiunea client server + trimitere user parola + accept/reject/timeout
+Modul 5 -> meniu + integrare modul 1-3
+Modul 6 -> afisarea la n secunde + clear la afisarea veche
+Modul 7 -> modificare date la un port separat
+
+
