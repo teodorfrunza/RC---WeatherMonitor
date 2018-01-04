@@ -81,8 +81,13 @@ int createAccount(char * username, char * password){
             return errno;
         }
 
+        char instr[100] = "touch /home/leafy/Retele/WeatherMonitor/userfiles/";
+        strcat(instr,username);
+        system(instr);
+            
+
         fprintf(f,"%s %s\n", username, password);
-        fprintf(f2,"%s:: \n", username);
+        //fprintf(f2,"%s:: \n", username);
 
         fclose(f);
         fclose(f2);
