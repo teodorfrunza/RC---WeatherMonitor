@@ -39,6 +39,7 @@ int main (int argc, char *argv[]){
     int sd;			            // descriptorul de socket
     struct sockaddr_in server;	// structura folosita pentru conectare 
     char msg[100];		        // mesajul trimis
+    char bigmsg[200];
 
     /* exista toate argumentele in linia de comanda? */
     if (argc != 3){
@@ -92,14 +93,16 @@ int main (int argc, char *argv[]){
         return errno;
     }
 
+    bzero(msg,100);
     if (read (sd, msg, 100) < 0){
         perror ("[client]Eroare la read() de la server.\n");
         return errno;
     }
     /* afisam mesajul primit */
 
-    printf("%d , %s ",strcmp(msg,"[server]Please insert an username and a password that contains only alphabetical characters a-z : "),msg);
-    fflush(stdout);
+    //printf("%d , %s ",strcmp(msg,"[server]Please insert an username and a password that contains only alphabetical characters a-z : "),msg);
+    //fflush(stdout);
+
     if(strcmp(msg,"[server]Please insert your username and password separated by a space (ex:asd 1234): ") == 0){
 
         printf ("%s", msg);
@@ -129,6 +132,15 @@ int main (int argc, char *argv[]){
             return errno;
         }
 
+        system("clear");
+        printf("[client]Loading...");
+        fflush(stdout);
+        sleep(3);
+        system("clear");
+
+        
+        
+
     }
 
     if(strcmp(msg,"[server]Please insert an username and a password that does not contain uppercase or space: ") == 0){
@@ -141,84 +153,156 @@ int main (int argc, char *argv[]){
         bzero (msg, 100);
         read(0, msg, 100);
 
-        user = strtok(msg," ");
+        for(int i=0;i<strlen(msg);i++)
+            if(msg[i] == ' ') count++;
 
 
-        while (count == 0 || count >=2 || (verifUser(user) == 1)){
+        while (count == 0 || count >=2){
             count = 0;
-            printf("[client]You have entered a wrong number of arguments or a taken username! Please retry: ");
+            printf("[client]You have entered a wrong number of arguments! Please retry: ");
             fflush(stdout);
 
             bzero (msg, 100);
             read(0, msg, 100);
             for(int i=0;i<strlen(msg);i++)
                 if(msg[i] == ' ') count++;
-            user = strtok(msg," ");
         }
 
-        
-        
-
-        
         if (write (sd, msg, 100) <= 0){
             perror ("[client]Eroare la write() spre server.\n");
             return errno;
-        }
+        }else printf("%s",msg);
 
+        //
         bzero (msg, 100);
         if (read (sd, msg, 100) < 0){
             perror ("[client]Eroare la read() de la server.\n");
             return errno;
         }
 
-        printf ("%s", msg);
-        fflush(stdout);
-
-        bzero (msg, 100);
-        read(0, msg, 100);
-
-        int flag=0;
-        for(int i = 0 ; i<3; i++){
-            //DE FACUT FUNCTIA DE VERIFICARE ORAS DIN FISIER
-            if(verifTown(msg) == 1) flag++;
-        }
-        
-        while(flag == 0){
-            flag = 0;
-            printf("[client]You have entered a city we our app doesn't cover! Please retry: ");
+        while(strcmp(msg,"sendR")==0) {
+            
+            system("clear");
+            printf("[client]There is already another account with this name! Please try again: ");
             fflush(stdout);
-
-            bzero (msg, 100);
+            bzero(msg,100);
             read(0, msg, 100);
 
-            for(int i = 0 ; i<3; i++){
-                if(verifTown(msg) == 1) flag++;
+            while (count == 0 || count >=2){
+                count = 0;
+                printf("[client]You have entered a wrong number of arguments! Please retry: ");
+                fflush(stdout);
+
+                bzero (msg, 100);
+                read(0, msg, 100);
+                for(int i=0;i<strlen(msg);i++)
+                    if(msg[i] == ' ') count++;
             }
+
+            if (write (sd, msg, 100) <= 0){
+                perror ("[client]Eroare la write() spre server.\n");
+                return errno;
+            }else printf("%s",msg);
+
+            bzero (msg, 100);
+            if (read (sd, msg, 100) < 0){
+                perror ("[client]Eroare la read() de la server.\n");
+                return errno;
+            }
+
         }
 
-        if (write (sd, msg, 100) <= 0){
-            perror ("[client]Eroare la write() spre server.\n");
-            return errno;
-        }
+        system("clear");
+        printf("%s",msg);
+        fflush(stdout);
+        sleep(3);
+        system("clear");
+        
+    }
 
+    bzero (bigmsg, 200);
+    if (read (sd, bigmsg, 200) < 0){
+        perror ("[client]Eroare la read() de la server.\n");
+        return errno;
+    }
+    printf("%s \n",bigmsg);
+    fflush(stdout);
+    
+    // DE AICI SE SELECTEAZA ANN/VIEW/DEL
+
+    bzero(msg,100);
+    read(0, msg, 100);
+
+    while(msg[0]!='1' && msg[0]!='2' && msg[0]!='3' && msg[0]!='q'){
+        printf("[client]Please select one option of the above: ");
+        fflush (stdout);
+        bzero (msg, 100);
+        read (0, msg, 100);
     }
 
 
+    if (write (sd, msg, 100) <= 0){
+        perror ("[client]Eroare la write() spre server.\n");
+        return errno;
+    }
 
-
-
-
+    //pana aici merge 20:13 - DE AICI E ADAUGAREA
 
     system("clear");
+
     bzero (msg, 100);
     if (read (sd, msg, 100) < 0){
         perror ("[client]Eroare la read() de la server.\n");
         return errno;
     }
-    printf("%s",msg);
+
+    char * msg2;
+    char * nrOrase;
+    msg2 = strtok(msg, "&");
+    nrOrase = strtok(NULL,"&");
+    int nr = atoi(nrOrase);
+
+    printf("%s",msg2);
     fflush(stdout);
+
+    //printf("%s::%d",msg2,atoi(nrOrase));
+
+    bzero(msg,100);
+    read(0,msg,100);
+    
+    while(atoi(msg)>=nr || atoi(msg)<0){
+        printf("%s",msg2);
+        printf("The option you have chosen doens't exist!Please retry: ");
+        fflush(stdout);
+        bzero(msg,100);
+        read(0,msg,100);        
+    }
+
+    if (write (sd, msg, 100) <= 0){
+        perror ("[client]Eroare la write() spre server.\n");
+        return errno;
+    }
+    
+
+/*
+    bzero(msg,100);
+    read(0,msg,100);
+
+    if (write (sd, msg, 100) <= 0){
+        perror ("[client]Eroare la write() spre server.\n");
+        return errno;
+    }else printf("%s",msg);
+
+    printf("nope");
+    bzero (msg, 100);
+    if (read (sd, msg, 100) < 0){
+        perror ("[client]Eroare la read() de la server.\n");
+        return errno;
+    }else printf("citit");
+    printf("%s",msg);
+    fflush(stdout);*/
 
     /* inchidem conexiunea, am terminat */
     close (sd);
-
 }
+
