@@ -143,6 +143,56 @@ int addTown(char * user, char * town){
     return 1;
 }
 
+int eraseTown(char * user, char * town){
+    FILE * f = NULL;
+    FILE * f2 = NULL;
+    char * line = NULL;
+    char * line2 = NULL;
+    size_t length = 0;
+    size_t length2 = 0;
+    char path[100];
+    char buffer[500]=" ";
+
+    bzero(path,100);
+    strcat(path,"/home/leafy/Retele/WeatherMonitor/userfiles/");
+    strcat(path,user);
+
+    f = fopen(path,"r");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului.\n");
+        return errno;
+    }
+
+    f2 = fopen("/home/leafy/Retele/WeatherMonitor/cities/index","r");
+    if (f2 == NULL) {
+        perror ("Eroare la deschiderea fisierului.\n");
+        return errno;
+    }
+
+    bzero(buffer,500);
+    while(getline(&line,&length,f)!=EOF){
+        line[strcspn(line, "\r\n")] = 0;
+        if(strcmp(town,line)!=0) {
+            strcat(buffer,line);
+            strcat(buffer,"\n");
+        }
+    }
+
+    fclose(f);
+
+    f = fopen(path,"w");
+    if (f == NULL) {
+        perror ("Eroare la deschiderea fisierului.\n");
+        return errno;
+    }
+
+    fprintf(f,"%s",buffer);
+
+    fclose(f);
+    fclose(f2);
+    return 1;
+}
+
 int main (){
     
     struct sockaddr_in server;	// structura folosita de server
@@ -363,127 +413,200 @@ int main (){
             printf ("[server]Mesajul a fost receptionat...%s\n", msg);
             
             //pana aici merge 20:13
+            if(msg[0] == '2'){
+                while (msg[0] != 'q') {
 
-            if (msg[0] == '2') {
+                    int j=0;
+                    int count = 0;
+                    char * line = NULL;
+                    size_t length = 0;
+                    
+                   //GENERARE VECTOR CU ORASE PENTRU MENIUL 2
+                    FILE *f;
+                    f = fopen("/home/leafy/Retele/WeatherMonitor/cities/index","r");
 
-                int j=0;
-                int count = 0;
-                char * line = NULL;
-                size_t length = 0;
-                
-               //GENERARE VECTOR CU ORASE PENTRU MENIUL 1
-                FILE *f;
-                f = fopen("/home/leafy/Retele/WeatherMonitor/cities/index","r");
+                    while(getline(&line,&length, f)!=EOF){
+                        count++;
+                    }
+                    //printf("%d",count);
 
-                while(getline(&line,&length, f)!=EOF){
-                    count++;
-                }
-                //printf("%d",count);
+                    char vect[count][10];
+                    
+                    for(int i=0;i<count;i++){
+                        bzero(vect[i],10);
+                    }
+                    
+                    rewind(f);
+                    while(getline(&line, &length, f)!=EOF){
+                        line = strtok(line,"\n");
+                        strcpy(vect[j],line);
+                        j++;
+                    }
 
-                char vect[count][10];
-                
-                for(int i=0;i<count;i++){
-                    bzero(vect[i],10);
-                }
-                
-                rewind(f);
-                while(getline(&line, &length, f)!=EOF){
-                    line = strtok(line,"\n");
-                    strcpy(vect[j],line);
-                    j++;
-                }
+                    /*for(int i=0;i<count;i++){
+                        printf("%s\n",vect[i]);
+                    }*/
+                    fclose(f);
 
-                /*for(int i=0;i<count;i++){
-                    printf("%s\n",vect[i]);
-                }*/
-                fclose(f);
+                    //GENERARE MENIU PROPRIU-ZIS - pana aici merge
 
-                //GENERARE MENIU PROPRIU-ZIS - pana aici merge
-
-                char addMenu[100]= " ";
-                char nr[20];
-                
-                bzero(addMenu,100);
-                strcat(addMenu,"Please select one of the following:\n");
-                for(int i=0;i<count;i++){
-                    bzero(nr,2);
-                    snprintf(nr,sizeof(nr),"%d",i); //conversie pentru strcat a int spre char
+                    char addMenu[100]= " ";
+                    char nr[20];
+                    
+                    bzero(addMenu,100);
+                    strcat(addMenu,"Please select one of the following:\n");
+                    for(int i=0;i<count;i++){
+                        bzero(nr,20);
+                        snprintf(nr,sizeof(nr),"%d",i); //conversie pentru strcat a int spre char
+                        strcat(addMenu,nr);
+                        strcat(addMenu,".");
+                        strcat(addMenu,vect[i]);
+                        strcat(addMenu,"\n");
+                    }
+                    strcat(addMenu,"&");
+                    bzero(nr,20);
+                    snprintf(nr,sizeof(nr),"%d",count);
                     strcat(addMenu,nr);
-                    strcat(addMenu,".");
-                    strcat(addMenu,vect[i]);
-                    strcat(addMenu,"\n");
+                    
+                    //printf("%s",addMenu);
+                    
+                    if (write (client, addMenu, 100) <= 0){
+	                    perror ("[server]Eroare la write() catre client.\n");
+	                    continue;		/* continuam sa ascultam */
+                    }
+                    else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",addMenu);
+
+                    bzero(msg,100);
+                    if (read (client, msg, 100) <= 0){
+	                    perror ("[server]Eroare la read() de la client.\n");
+	                    close (client);	/* inchidem conexiunea cu clientul */
+	                    continue;		/* continuam sa ascultam */
+	                }
+
+                    printf ("[server]Mesajul a fost receptionat...%s\n", msg);
+                    
+                    //printf("user: %s",savedUser);
+                    //printf("%d",addTown(savedUser,vect[atoi(msg)]));
+                    addTown(savedUser,vect[atoi(msg)]);
+
+                    bzero(msgrasp,100);
+                    strcat(msgrasp,"Press any key to add another town or q to go back to menu.");
+        
+                    if (write (client, msgrasp, 100) <= 0){
+	                    perror ("[server]Eroare la write() catre client.\n");
+	                    continue;		/* continuam sa ascultam */
+                    }
+                    else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",msgrasp);
+
+                    bzero(msg,100);
+                    if (read (client, msg, 100) <= 0){
+	                    perror ("[server]Eroare la read() de la client.\n");
+	                    close (client);	/* inchidem conexiunea cu clientul */
+	                    continue;		/* continuam sa ascultam */
+	                }
+                    printf ("[server]Mesajul a fost receptionat...%s\n", msg);
                 }
-                strcat(addMenu,"&");
-                bzero(nr,20);
-                snprintf(nr,sizeof(nr),"%d",count);
-                strcat(addMenu,nr);
-                
-                //printf("%s",addMenu);
-                
-                if (write (client, addMenu, 100) <= 0){
-	                perror ("[server]Eroare la write() catre client.\n");
-	                continue;		/* continuam sa ascultam */
-                }
-                else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",addMenu);
-
-                bzero(msg,100);
-                if (read (client, msg, 100) <= 0){
-	                perror ("[server]Eroare la read() de la client.\n");
-	                close (client);	/* inchidem conexiunea cu clientul */
-	                continue;		/* continuam sa ascultam */
-	            }
-
-                printf ("[server]Mesajul a fost receptionat...%s\n", msg);
-                
-                //printf("user: %s",savedUser);
-                //printf("%d",addTown(savedUser,vect[atoi(msg)]));
-                addTown(savedUser,vect[atoi(msg)]);
-
             }
-            else printf("NASPA");
+            else if(msg[0] == '3'){
+                while (msg[0] != 'q') {
 
-            /*bzero(msg,100);
-                  
+                    int j=0;
+                    int count = 0;
+                    char * line = NULL;
+                    size_t length = 0;
+                    
+                   //GENERARE VECTOR CU ORASE PENTRU MENIUL 2
+                    FILE *f;
+                    char path[100];
+                    bzero(path,100);
+                    strcat(path,"/home/leafy/Retele/WeatherMonitor/userfiles/");
+                    strcat(path,savedUser);
+                    f = fopen(path,"r");
 
+                    while(getline(&line,&length, f)!=EOF){
+                        count++;
+                    }
+                    //printf("%d",count);
 
-            /*if (msg[0] == '2'){
-                
+                    char vect2[count][10];
+                    
+                    for(int i=0;i<count;i++){
+                        bzero(vect2[i],10);
+                    }
+                    
+                    rewind(f);
+                    while(getline(&line, &length, f)!=EOF){
+                        line = strtok(line,"\n");
+                        strcpy(vect2[j],line);
+                        j++;
+                    }
 
-                
-                
+                    /*for(int i=0;i<count;i++){
+                        printf("%s\n",vect2[i]);
+                    }*/
+                    fclose(f);
 
-                if (write (client, addMenu, 100) <= 0){
-	                perror ("[server]Eroare la write() catre client.\n");
-	                continue;		/* continuam sa ascultam 
+                    //GENERARE MENIU PROPRIU-ZIS - pana aici merge
+
+                    char rmMenu[100]= " ";
+                    char nr[20];
+                    
+                    bzero(rmMenu,100);
+                    strcat(rmMenu,"Please select one of the following:\n");
+                    for(int i=0;i<count;i++){
+                        bzero(nr,20);
+                        snprintf(nr,sizeof(nr),"%d",i); //conversie pentru strcat a int spre char
+                        strcat(rmMenu,nr);
+                        strcat(rmMenu,".");
+                        strcat(rmMenu,vect2[i]);
+                        strcat(rmMenu,"\n");
+                    }
+                    strcat(rmMenu,"&");
+                    bzero(nr,20);
+                    snprintf(nr,sizeof(nr),"%d",count);
+                    strcat(rmMenu,nr);
+                    
+                    //printf("%s",rmMenu);
+                    
+                    if (write (client, rmMenu, 100) <= 0){
+	                    perror ("[server]Eroare la write() catre client.\n");
+	                    continue;		/* continuam sa ascultam */
+                    }
+                    else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",rmMenu);
+
+                    bzero(msg,100);
+                    if (read (client, msg, 100) <= 0){
+	                    perror ("[server]Eroare la read() de la client.\n");
+	                    close (client);	/* inchidem conexiunea cu clientul */
+	                    continue;		/* continuam sa ascultam */
+	                }
+
+                    printf ("[server]Mesajul a fost receptionat...%s\n", msg);
+                    
+                    
+                    eraseTown(savedUser,vect2[atoi(msg)]);
+
+                    bzero(msgrasp,100);
+                    strcat(msgrasp,"Press any key to remove another town or q to go back to menu.");
+        
+                    if (write (client, msgrasp, 100) <= 0){
+	                    perror ("[server]Eroare la write() catre client.\n");
+	                    continue;		/* continuam sa ascultam */
+                    }
+                    else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",msgrasp);
+
+                    bzero(msg,100);
+                    if (read (client, msg, 100) <= 0){
+	                    perror ("[server]Eroare la read() de la client.\n");
+	                    close (client);	/* inchidem conexiunea cu clientul */
+	                    continue;		/* continuam sa ascultam */
+	                }
+                    printf ("[server]Mesajul a fost receptionat...%s\n", msg);
                 }
-                else printf ("[server]Mesajul a fost trasmis cu succes. %s\n",addMenu);
-            //}else printf("MORT");*/
-
-            
-            
-
-
-
+            }
             
 	
-          
-
-            /*
-            bzero(msgrasp,100);
-            strcat(msgrasp,"Hello ");
-            strcat(msgrasp,msg);
-          
-            printf("[server]Trimitem mesajul inapoi...%s\n",msgrasp);
-          
-          
-            
-            if (write (client, msgrasp, 100) <= 0){
-	            perror ("[server]Eroare la write() catre client.\n");
-	            continue;		
-	        }
-            else printf ("[server]Mesajul a fost trasmis cu succes.\n");*/
-
-            /* am terminat cu acest client, inchidem conexiunea */
+         
             close (client);
 
             exit(0); //ADAUGARE PT CONCURENT

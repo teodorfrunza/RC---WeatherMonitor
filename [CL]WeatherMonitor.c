@@ -228,7 +228,7 @@ int main (int argc, char *argv[]){
     printf("%s \n",bigmsg);
     fflush(stdout);
     
-    // DE AICI SE SELECTEAZA ANN/VIEW/DEL
+    // DE AICI SE SELECTEAZA ADD/VIEW/DEL
 
     bzero(msg,100);
     read(0, msg, 100);
@@ -247,43 +247,113 @@ int main (int argc, char *argv[]){
     }
 
     //pana aici merge 20:13 - DE AICI E ADAUGAREA
+    if(msg[0]=='2' || msg[0]=='3'){
+        system("clear");
 
-    system("clear");
+        bzero (msg, 100);
+        if (read (sd, msg, 100) < 0){
+            perror ("[client]Eroare la read() de la server.\n");
+            return errno;
+        }
 
-    bzero (msg, 100);
-    if (read (sd, msg, 100) < 0){
-        perror ("[client]Eroare la read() de la server.\n");
-        return errno;
-    }
+        char * msg2;
+        char * nrOrase;
+        msg2 = strtok(msg, "&");
+        nrOrase = strtok(NULL,"&");
+        int nr = atoi(nrOrase);
 
-    char * msg2;
-    char * nrOrase;
-    msg2 = strtok(msg, "&");
-    nrOrase = strtok(NULL,"&");
-    int nr = atoi(nrOrase);
-
-    printf("%s",msg2);
-    fflush(stdout);
-
-    //printf("%s::%d",msg2,atoi(nrOrase));
-
-    bzero(msg,100);
-    read(0,msg,100);
-    
-    while(atoi(msg)>=nr || atoi(msg)<0){
         printf("%s",msg2);
-        printf("The option you have chosen doens't exist!Please retry: ");
         fflush(stdout);
-        bzero(msg,100);
-        read(0,msg,100);        
-    }
 
-    if (write (sd, msg, 100) <= 0){
-        perror ("[client]Eroare la write() spre server.\n");
-        return errno;
-    }
+        //printf("%s::%d",msg2,atoi(nrOrase));
+
+        bzero(msg,100);
+        read(0,msg,100);
+        
+        while(atoi(msg)>=nr || atoi(msg)<0){
+            printf("%s",msg2);
+            printf("The option you have chosen doens't exist!Please retry: ");
+            fflush(stdout);
+            bzero(msg,100);
+            read(0,msg,100);        
+        }
+
+        if (write (sd, msg, 100) <= 0){
+            perror ("[client]Eroare la write() spre server.\n");
+            return errno;
+        }
+        
+        bzero (msg, 100);
+        if (read (sd, msg, 100) < 0){
+            perror ("[client]Eroare la read() de la server.\n");
+            return errno;
+        }
+        printf("%s",msg);
+        fflush(stdout);
+
+        bzero(msg,100);
+        read(0,msg,100);
+
+        if (write (sd, msg, 100) <= 0){
+            perror ("[client]Eroare la write() spre server.\n");
+            return errno;
+        }
     
 
+        
+        while(msg[0] != 'q'){
+            system("clear");
+
+            bzero (msg, 100);
+            if (read (sd, msg, 100) < 0){
+                perror ("[client]Eroare la read() de la server.\n");
+                return errno;
+            }
+
+            char * msg2;
+            char * nrOrase;
+            msg2 = strtok(msg, "&");
+            nrOrase = strtok(NULL,"&");
+            int nr = atoi(nrOrase);
+
+            printf("%s",msg2);
+            fflush(stdout);
+
+            //printf("%s::%d",msg2,atoi(nrOrase));
+
+            bzero(msg,100);
+            read(0,msg,100);
+            
+            while(atoi(msg)>=nr || atoi(msg)<0){
+                printf("%s",msg2);
+                printf("The option you have chosen doens't exist!Please retry: ");
+                fflush(stdout);
+                bzero(msg,100);
+                read(0,msg,100);        
+            }
+
+            if (write (sd, msg, 100) <= 0){
+                perror ("[client]Eroare la write() spre server.\n");
+                return errno;
+            }
+            
+            bzero (msg, 100);
+            if (read (sd, msg, 100) < 0){
+                perror ("[client]Eroare la read() de la server.\n");
+                return errno;
+            }
+            printf("%s",msg);
+            fflush(stdout);
+
+            bzero(msg,100);
+            read(0,msg,100);
+
+            if (write (sd, msg, 100) <= 0){
+                perror ("[client]Eroare la write() spre server.\n");
+                return errno;
+            }
+        }
+    }
 /*
     bzero(msg,100);
     read(0,msg,100);
